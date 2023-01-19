@@ -14,9 +14,20 @@ unset WAYLAND_DISPLAYCOPY
 XDG_CURRENT_DESKTOP="Deepin"
 export LD_LIBRARY_PATH=/usr/share/uengine/lib64/ 
 # 判断 UEngine 是否被正确安装
+which uengine
+if [[ $? != 0 ]]; then
+    notify-send -i /opt/apps/com.gitee.uengine.runner.spark/files/icon.png "未安装 UEngine，结束！" -a uengine-runner
+    exit
+fi
 notify-send -i /opt/apps/com.gitee.uengine.runner.spark/files/icon.png "UEngine 服务启动完成" -a uengine-runner
 # 守护进程，防止异常退出
 while [[ true ]]; do
     uengine session-manager -platformtheme=deepin
+    # 让用户可以强制结束
+    if [[ -f "/tmp/uengine-loading-ubuntu-end" ]]; then
+        rm /tmp/uengine-loading-ubuntu-end
+        notify-send -i /opt/apps/com.gitee.uengine.runner.spark/files/icon.png "UEngine 服务异常崩溃，不再重启服务" -a uengine-runner
+        break
+    fi
     notify-send -i /opt/apps/com.gitee.uengine.runner.spark/files/icon.png "UEngine 服务异常结束，重新启动" -a uengine-runner
 done
