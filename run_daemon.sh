@@ -40,6 +40,17 @@ unset WAYLAND_DISPLAYCOPY
 XDG_CURRENT_DESKTOP="Deepin"
 export LD_LIBRARY_PATH=/usr/share/uengine/lib64/ 
 # 判断 UEngine 是否被正确安装
+# 检测架构
+if [[ `arch` != "x86_64" ]]; then
+    echo 非 X86 架构，废除
+    exit
+fi
+# 检测是不是 Ubuntu
+lsb_release -i | grep -i ubuntu
+if [[ $? != 0 ]]; then
+    echo 当前不是 Ubuntu，不使用
+    exit
+fi
 which uengine
 if [[ $? != 0 ]]; then
     notify-send -i /opt/apps/com.gitee.uengine.runner.spark/files/icon.png "未安装 UEngine，结束！" -a uengine-runner
