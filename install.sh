@@ -10,11 +10,30 @@ echo =========================
 find . -name '*.deb' | xargs sudo dpkg -i
 sudo apt-mark hold lxc lxc-templates liblxc1 liblxc-common lxc-utils
 sudo apt install -f -y
-sudo apt install libdframeworkdbus2 screen libnotify-bin -y
+sudo apt install libdframeworkdbus2 screen -y
+# 检测安装是否成功
 which uengine
 if [[ $? != 0 ]]; then
-    echo UEngine 安装失败！
-    sudo rm -v /usr/bin/uengine-loading-ubuntu
+    # 安装失败
+    sudo rm /usr/share/applications/uengine-loading-ubuntu.desktop
+    sudo rm /etc/xdg/autostart/uengine-loading-ubuntu.desktop
+    sudo rm /usr/bin/uengine-loading-ubuntu
+    for username in $(ls /home)  
+    do
+        echo /home/$username
+        sudo rm /home/$username/uengine-launch/run_daemon.sh
+    done
+    zenity --error --no-wrap '--text=抱歉，UEngine 安装失败，已移除安装时进行的修改'
     exit
+fi
+# 添加 apt 源以拉取最新版本的 UEngine Android Image
+if [[ ! -f /etc/apt/sources.list.d/gfdgdxi-uengine-without-root-list-apt.list ]]; then
+    mkdir -p /tmp/gfdgd-xi-sources
+    wget -P /tmp/gfdgd-xi-sources https://code.gitlink.org.cn/gfdgd_xi/uengine-apt/raw/branch/master/gpg.asc
+    wget -P /tmp/gfdgd-xi-sources https://code.gitlink.org.cn/gfdgd_xi/uengine-apt/raw/branch/master/sources/gitlink.list
+    gpg --dearmor /tmp/gfdgd-xi-sources/gpg.asc
+    sudo cp -v /tmp/gfdgd-xi-sources/gpg.asc.gpg /etc/apt/trusted.gpg.d/gfdgdxi-uengine-without-root-list-apt.gpg
+    sudo cp -v /tmp/gfdgd-xi-sources/gitlink.list /etc/apt/sources.list.d/gfdgdxi-uengine-without-root-list-apt.list
+    sudo apt update
 fi
 echo "请重启并换成5.17内核，然后运行launch_uengine.sh即可启动"
